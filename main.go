@@ -35,7 +35,10 @@ func main() {
 		ctx.JSON(iris.Map{"message": "Hello Iris!"})
     })
     
-    app.PartyFunc("/products", productsParty)
+		app.PartyFunc("/products", productsParty)
+		app.PartyFunc("/products/prices/", productPricesParty)
+		app.PartyFunc("/products/base-features/", productBaseFeaturesParty)
+		app.PartyFunc("/products/features/", productFeaturesParty)
 
 	// http://localhost:8080
 	// http://localhost:8080/ping

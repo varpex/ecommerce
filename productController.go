@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/kataras/iris"
 
 	"github.com/jinzhu/gorm"
@@ -41,6 +42,10 @@ var (
 
 func productsParty(products iris.Party) {
 	products.Get("/", List)
+	products.Get("/{id: long}", Retrieve)
+	products.Post("/", Post)
+	products.Patch("/{id: long}", Patch)
+	products.Delete("/{id: long}", Delete)
 }
 
 func List(ctx iris.Context) {
@@ -65,93 +70,90 @@ func List(ctx iris.Context) {
 	ctx.JSON(data)
 }
 
-// func (m *ProductController) GetBy(id int64) interface{} {
-// 	db, err := gorm.Open("postgres", productConnectionString)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer db.Close()
+func Retrieve(ctx iris.Context) {
+	id := ctx.Params().Get("id")
+	db, err := gorm.Open("postgres", productConnectionString)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
 
-// 	var instance Product
-// 	findErr := db.Where("id = ?", id).Preload("Prices").Preload("Features").Find(&instance).Error
-// 	if findErr != nil {
-// 		panic(findErr)
-// 	}
+	var instance Product
+	findErr := db.Where("id = ?", id).Preload("Prices").Preload("Features").Find(&instance).Error
+	if findErr != nil {
+		panic(findErr)
+	}
 
-// 	return instance
-// }
+	ctx.JSON(instance)
+}
 
-// func (m *ProductController) Post() interface{} {
-// 	db, err := gorm.Open("postgres", productConnectionString)
-// 	if err != nil {
-// 		fmt.Printf("%s\n", err.Error)
-// 		// panic(err)
-// 	}
-// 	defer db.Close()
+func Post(ctx iris.Context) {
+	db, err := gorm.Open("postgres", productConnectionString)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
 
-// 	product := &Product{}
-// 	dataErr := m.ctx.ReadJSON(product)
-// 	if dataErr != nil {
-// 		panic(dataErr)
-// 	}
+	product := &Product{}
+	dataErr := ctx.ReadJSON(product)
+	if dataErr != nil {
+		panic(dataErr)
+	}
 
-// 	// instance := &Product{
-// 	// 	Title:       Title,
-// 	// 	Biography:   Biography,
-// 	// 	Description: Description,
-// 	// }
+	createErr := db.Create(product).Scan(&product).Error
+	if createErr != nil {
+		panic(createErr)
+	}
 
-// 	createErr := db.Create(product).Scan(&product).Error
-// 	if createErr != nil {
-// 		fmt.Printf("%s\n", createErr.Error)
-// 		// panic(createErr)
-// 	}
+	ctx.JSON(product)
+}
 
-// 	return product
-// }
+func Patch(ctx iris.Context) {
+	db, err := gorm.Open("postgres", productConnectionString)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
 
-// func (m *ProductController) PostBy(product Product) interface{} {
-// 	db, err := gorm.Open("postgres", productConnectionString)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	defer db.Close()
+	id := ctx.Params().Get("id")
 
-// 	var instance Product
-// 	findErr := db.Where("id = ?", product.ID).Find(&instance).Error
-// 	if findErr != nil {
-// 		panic(findErr)
-// 	}
+	product := &Product{}
+	dataErr := ctx.ReadJSON(product)
+	if dataErr != nil {
+		panic(dataErr)
+	}
 
-// 	if product.Title != "" {
-// 		instance.Title = product.Title
-// 	}
-// 	if product.Biography != "" {
-// 		instance.Biography = product.Biography
-// 	}
-// 	if product.Description != "" {
-// 		instance.Description = product.Description
-// 	}
+	var instance Product
+	findErr := db.Where("id = ?", id).Find(&instance).Error
+	if findErr != nil {
+		panic(findErr)
+	}
 
-// 	saveErr := db.Save(&instance).Error
-// 	if saveErr != nil {
-// 		panic(saveErr)
-// 	}
+	instance.Title = product.Title
+	instance.Biography = product.Biography
+	instance.Description = product.Description
 
-// 	return instance
-// }
+	saveErr := db.Save(&instance).Error
+	if saveErr != nil {
+		panic(saveErr)
+	}
 
-// func (m *ProductController) Delete(id int64) interface{} {
-// 	db, err := gorm.Open("postgres", productConnectionString)
-// 	panic(err)
-// 	defer db.Close()
+	ctx.JSON(product)
+}
 
-// 	var instance Product
-// 	db.Where("id = ?", id).Find(&instance)
+func Delete(ctx iris.Context) {
+	db, err := gorm.Open("postgres", productConnectionString)
+	panic(err)
+	defer db.Close()
 
-// 	db.Delete(&instance)
+	id := ctx.Params().Get("id")
 
-// 	data := make(map[string]interface{})
-// 	data["message"] = fmt.Sprintf("%d Deleted.", id)
-// 	return data
-// }
+	var instance Product
+	db.Where("id = ?", id).Find(&instance)
+
+	db.Delete(&instance)
+
+	data := make(map[string]interface{})
+	data["message"] = fmt.Sprintf("%d Deleted.", id)
+	ctx.JSON(data)
+}
