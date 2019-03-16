@@ -2,21 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/kataras/iris"
+	"strconv"
+
+	"github.com/kataras/iris/hero"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-func productPricesParty(productPrices iris.Party) {
-	productPrices.Get("/", productPriceList)
-	productPrices.Get("/{id: long}", productPriceRetrieve)
-	productPrices.Post("/", productPricePost)
-	productPrices.Patch("/{id: long}", productPricePatch)
-	productPrices.Delete("/{id: long}", productPriceDelete)
-}
-
-func productPriceList(ctx iris.Context) {
+func productPricesList() hero.Result {
 	db, err := gorm.Open("postgres", productConnectionString)
 	if err != nil {
 		panic(err)
@@ -25,21 +19,64 @@ func productPriceList(ctx iris.Context) {
 
 	var instances []ProductPrice
 	var total int
-
 	findErr := db.Find(&instances).Count(&total).Error
 	if findErr != nil {
 		panic(findErr)
 	}
 
+	var products []Product
+	productsFindErr := db.Find(&products).Error
+	if productsFindErr != nil {
+		panic(productsFindErr)
+	}
+
 	data := make(map[string]interface{})
 	data["results"] = instances
 	data["count"] = total
-	// return c.RenderJSON(data)
-	ctx.JSON(data)
+	data["products"] = products
+	data["title"] = "لیست قیمت برای محصولات"
+
+	return hero.View{
+		Name:   "productPrices/list.html",
+		Layout: "admin/main.html",
+		Data:   data,
+	}
 }
 
-func productPriceRetrieve(ctx iris.Context) {
-	id := ctx.Params().Get("id")
+func productPricesListByProduct(product int64) hero.Result {
+	db, err := gorm.Open("postgres", productConnectionString)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	var instances []ProductPrice
+	var total int
+	findErr := db.Where("product_id = ?", product).Find(&instances).Count(&total).Error
+	if findErr != nil {
+		panic(findErr)
+	}
+
+	var products []Product
+	productsFindErr := db.Where("id = ?", product).Find(&products).Error
+	if productsFindErr != nil {
+		panic(productsFindErr)
+	}
+
+	data := make(map[string]interface{})
+	data["results"] = instances
+	data["count"] = total
+	data["products"] = products
+	data["title"] = "تصاویر برای محصول: " + strconv.FormatInt(product, 10)
+
+	return hero.View{
+		Name:   "productPrices/list.html",
+		Layout: "admin/main.html",
+		Data:   data,
+	}
+}
+
+func productPricesRetrieve(id int64) hero.Result {
 	db, err := gorm.Open("postgres", productConnectionString)
 	if err != nil {
 		panic(err)
@@ -52,44 +89,60 @@ func productPriceRetrieve(ctx iris.Context) {
 		panic(findErr)
 	}
 
-	ctx.JSON(instance)
+	var products []Product
+	productsFindErr := db.Find(&products).Error
+	if productsFindErr != nil {
+		panic(productsFindErr)
+	}
+
+	data := make(map[string]interface{})
+	data["instance"] = instance
+	data["title"] = "Product Price"
+	data["products"] = products
+
+	return hero.View{
+		Name:   "productPrices/form.html",
+		Layout: "admin/main.html",
+		Data:   data,
+	}
 }
 
-func productPricePost(ctx iris.Context) {
+func productPricesPost(productPrice ProductPrice) hero.Result {
 	db, err := gorm.Open("postgres", productConnectionString)
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
 
-	product := &ProductPrice{}
-	dataErr := ctx.ReadJSON(product)
-	if dataErr != nil {
-		panic(dataErr)
-	}
-
-	createErr := db.Create(product).Scan(&product).Error
+	createErr := db.Create(&productPrice).Scan(&productPrice).Error
 	if createErr != nil {
 		panic(createErr)
 	}
 
-	ctx.JSON(product)
+	var products []Product
+	productsFindErr := db.Find(&products).Error
+	if productsFindErr != nil {
+		panic(productsFindErr)
+	}
+
+	data := make(map[string]interface{})
+	data["instance"] = productPrice
+	data["title"] = "Product Price Detail"
+	data["products"] = products
+
+	return hero.View{
+		Name:   "productPrices/form.html",
+		Layout: "admin/main.html",
+		Data:   data,
+	}
 }
 
-func productPricePatch(ctx iris.Context) {
+func productPricesPatch(id int64, productPrice ProductPrice) hero.Result {
 	db, err := gorm.Open("postgres", productConnectionString)
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
-
-	id := ctx.Params().Get("id")
-
-	product := &ProductPrice{}
-	dataErr := ctx.ReadJSON(product)
-	if dataErr != nil {
-		panic(dataErr)
-	}
 
 	var instance ProductPrice
 	findErr := db.Where("id = ?", id).Find(&instance).Error
@@ -97,23 +150,42 @@ func productPricePatch(ctx iris.Context) {
 		panic(findErr)
 	}
 
-	instance.Value = product.Value
-	instance.ProductId = product.ProductId
+	if productPrice.Value != 0 {
+		instance.Value = productPrice.Value
+	}
+	if productPrice.ProductId != 0 {
+		instance.ProductId = productPrice.ProductId
+	}
 
 	saveErr := db.Save(&instance).Error
 	if saveErr != nil {
 		panic(saveErr)
 	}
 
-	ctx.JSON(product)
+	var products []Product
+	productsFindErr := db.Find(&products).Error
+	if productsFindErr != nil {
+		panic(productsFindErr)
+	}
+
+	data := make(map[string]interface{})
+	data["instance"] = instance
+	data["title"] = "ProductPrice Detail"
+	data["products"] = products
+
+	return hero.View{
+		Name:   "productPrices/form.html",
+		Layout: "admin/main.html",
+		Data:   data,
+	}
 }
 
-func productPriceDelete(ctx iris.Context) {
+func productPricesDelete(id int64) interface{} {
 	db, err := gorm.Open("postgres", productConnectionString)
-	panic(err)
+	if err != nil {
+		panic(err)
+	}
 	defer db.Close()
-
-	id := ctx.Params().Get("id")
 
 	var instance ProductPrice
 	db.Where("id = ?", id).Find(&instance)
@@ -122,5 +194,5 @@ func productPriceDelete(ctx iris.Context) {
 
 	data := make(map[string]interface{})
 	data["message"] = fmt.Sprintf("%d Deleted.", id)
-	ctx.JSON(data)
+	return data
 }

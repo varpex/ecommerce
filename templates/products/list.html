@@ -1,0 +1,51 @@
+<div class="container">
+    <blockquote>
+        <p><em>تعداد کالا ها: {{ .count }}</em></p>
+    </blockquote>
+    <div class="row">
+        <table>
+            <thead>
+                <tr>
+                <th>آیدی</th>
+                <th>عنوان</th>
+                <th>بیوگرافی</th>
+                <th>قیمت</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range .results }}
+                <tr>
+                <td><a href="/products/{{ .ID }}">{{ .ID }}</a></td>
+                <td><a href="/products/{{ .ID }}">{{ .Title }}</a></td>
+                <td>{{ .Biography }}</td>
+                {{ range .Prices }}
+                    <td>{{ .Value }}</td>
+                {{ end }}
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+    </div>
+    <div class="row">
+        <form action="" method="POST">
+            <fieldset>
+            <label for="title">عنوان</label>
+            <input type="text" placeholder="عنوان" id="title" name="Title" />
+            <label for="biography">بیوگرافی</label>
+            <textarea placeholder="بیوگرافی" id="biography" name="Biography" rows="3"></textarea>
+            
+            <label for="description">توضیحات</label>
+            <textarea placeholder="توضیحات" id="description" name="Description" rows="7"></textarea>
+            <label for="categoryRefer">دسته بندی</label>
+            <select id="categoryRefer" name="CategoryRefer">
+                {{ range .categories }}
+                <option value={{ .ID }}>{{ .Title }}</option>
+                {{ end }}
+            </select>
+            <label for="url">لینک آدرس</label>
+            <input type="text" placeholder="Url" id="url" name="Url" dir="ltr" />
+            <input class="button-primary" type="submit" value="ثبت">
+            </fieldset>
+        </form>
+    </div>
+</div>

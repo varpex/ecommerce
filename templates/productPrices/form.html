@@ -1,0 +1,19 @@
+<div class="container">
+    <blockquote>
+        <p><em>جزئیات کالا: {{ .instance.ID }}</em></p>
+    </blockquote>
+    <div class="row">
+        <form action="" method="POST">
+            <label for="title">قیمت</label>
+            <input type="text" placeholder="قیمت محصول را وارد نمایید" id="value" name="Value" value="{{ .instance.Value }}">
+            <label for="productId">دسته بندی</label>
+            <select id="productId" name="ProductId">
+                {{ $v := .instance.ProductId }}
+                {{ range .products }}
+                <option value={{ .ID }} {{ if (eq $v .ID)}}selected{{ end }}>{{ .ID }}. {{ .Title }}</option>
+                {{ end }}
+            </select>
+            <input class="button-primary" type="submit" value="ثبت">
+        </form>
+    </div>
+</div>

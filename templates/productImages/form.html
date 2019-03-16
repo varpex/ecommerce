@@ -1,0 +1,31 @@
+<div class="container">
+    <blockquote>
+        <p><em>جزئیات کالا: {{ .instance.ID }}</em></p>
+    </blockquote>
+    <div class="row">
+        <div class="column">
+            <img src="http://localhost:8080/static{{ .instance.Path }}" />
+        </div>
+        <div class="column">
+            <div class="row">
+                <form action="" method="POST" enctype="multipart/form-data">
+                    <fieldset>
+
+                        <label for="title">فایل</label>
+                        <input type="file" placeholder="فایل مورد نظر را انتخاب نمایید" id="path" name="Path" >
+
+                        <label for="categoryRefer">کالای مربوطه</label>
+                        {{$v := .instance.ProductId}}
+                        <select id="productId" name="ProductId">
+                            {{ range .products }}
+                            <option value={{ .ID }} {{ if (eq $v .ID) }}selected{{ end }}>{{ .ID }}. {{ .Title }}</option>
+                            {{ end }}
+                        </select>
+                        <input class="button-primary" type="submit" value="ثبت">
+
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

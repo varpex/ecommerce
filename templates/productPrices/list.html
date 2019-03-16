@@ -1,0 +1,48 @@
+<div class="container">
+    <blockquote>
+        <div class="row">
+            <div class="column">
+                <p><em>{{ .title }}</em></p>
+            </div>
+            <div class="column">
+                <p><em>تعداد کل قیمت ها: {{ .count }}</em></p>
+            </div>
+        </div>
+    </blockquote>
+    <div class="row">
+        <table>
+            <thead>
+                <tr>
+                <th>آیدی</th>
+                <th>قیمت</th>
+                <th>کالای مربوطه</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{ range .results }}
+                <tr>
+                <td><a href="/product-prices/{{ .ID }}">{{ .ID }}</a></td>
+                <td><a href="/product-prices/{{ .ID }}">{{ .Value }}</a></td>
+                <td>{{ .ProductId }}</td>
+                </tr>
+                {{ end }}
+            </tbody>
+        </table>
+    </div>
+    <div class="row">
+        <form action="/product-prices" method="POST" enctype="multipart/form-data">
+            <fieldset>
+                <label for="title">قیمت</label>
+                <input type="text" placeholder="لطفا قیمت را وارد نمایید" id="value" name="Value" />
+
+                <label for="productId">کالای مربوطه</label>
+                <select id="productId" name="ProductId">
+                    {{ range .products }}
+                    <option value={{ .ID }}>{{ .ID }}. {{ .Title }}</option>
+                    {{ end }}
+                </select>
+                <input class="button-primary" type="submit" value="ثبت">
+            </fieldset>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>{{ .title }} - Varpex Store Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+    <!-- <link rel="stylesheet" href="//cdn.rawgit.com/necolas/normalize.css/master/normalize.css">
+    <link rel="stylesheet" href="//cdn.rawgit.com/milligram/milligram/master/dist/milligram.min.css"> -->
+    <link rel="stylesheet" href="/static/admin/normalize.css" />
+    <link rel="stylesheet" href="/static/admin/milligram.min.css" />
+    <link rel="stylesheet" href="/static/css/fontiran.css" />
+</head>
+<body dir="rtl">
+    <div class="container">
+        <blockquote style="border-right: 0">
+            <a class="button button-clear" href="/products">محصولات</a>
+            <a class="button button-clear" href="/product-prices">لیست قیمت</a>
+            <a class="button button-clear" href="/product-images">تصاویر</a>
+            <a class="button button-clear" href="/product-features">ویژگی ها</a>
+            <a class="button button-clear" href="/product-base-features">ویژگی های پایه</a>
+        </blockquote>
+    </div>
+    {{ yield }}
+</body>
+</html>
